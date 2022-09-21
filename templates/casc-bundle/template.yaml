@@ -1,0 +1,37 @@
+version: 1
+type: pipeline-template
+name: CloudBees CI Configuration Bundle
+templateType: MULTIBRANCH
+description: Provides GitOps for changes made to a CloudBees CI configuration bundle.
+parameters:
+  - name: repoOwner
+    type: string
+    displayName: GitHub Organization
+    defaultValue: REPLACE_GITHUB_ORG
+  - name: repository
+    type: string
+    displayName: GitHub Repository
+    defaultValue: controller
+  - name: githubCredentialId
+    displayName: GitHub Credential ID
+    type: CREDENTIALS
+    defaultValue: cloudbees-ci-previews-demo-github-app
+multibranch:
+  markerFile: bundle/bundle.yaml
+  branchSource:
+    github:
+      id: cloudbees-ci-config-bundle
+      credentialsId: ${githubCredentialId}
+      repoOwner: ${repoOwner}
+      repository: ${repository}
+      traits:
+        - gitHubBranchDiscovery:
+            strategyId: 1
+        - gitHubPullRequestDiscovery:
+            strategyId: 1
+        - gitHubForkDiscovery:
+            strategyId: 1
+            trust:
+              $class: TrustPermission
+        - headWildcardFilter:
+            includes: main PR-*
