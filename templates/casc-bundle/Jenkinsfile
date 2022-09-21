@@ -1,0 +1,26 @@
+library 'pipeline-library'
+pipeline {
+  agent none
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '2'))
+    timeout(time: 10, unit: 'MINUTES')
+  }
+  stages {
+    stage('Publish CasC Bundle Update Event') {
+      when {
+        beforeAgent true
+        branch 'main'
+      }
+      steps {
+        publishEvent event:jsonEvent("""
+          {
+            'controller':{'name':'${CASC_BUNDLE_ID}','action':'casc_bundle_update','bundle_id':'${CASC_BUNDLE_ID}'},
+            'github':{'organization':'${repoOwner}','repository':'${repository}'},
+            'secret':'${CASC_UPDATE_SECRET}',
+            'casc':{'auto_reload':'true'}
+          }
+        """), verbose: true
+      }
+    }
+  }
+}
